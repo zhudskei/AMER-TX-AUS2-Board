@@ -524,7 +524,7 @@ function renderStats() {
   document.getElementById("statsRow").innerHTML =
     '<div class="stat"><div class="stat-val" style="color:var(--primary)">'+casesCount+'</div><div class="stat-lbl">Active Cases</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:var(--error)">'+otr+'</div><div class="stat-lbl">OTR Theft</div></div>'+
-    '<div class="stat"><div class="stat-val" style="color:var(--warning)">'+wim+'</div><div class="stat-lbl">WIM</div></div>'+
+    '<div class="stat"><div class="stat-val" style="color:var(--warning)">'+wimCount+'</div><div class="stat-lbl">WIM</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:var(--success)">'+tasksDone+'</div><div class="stat-lbl">Tasks Done</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:var(--info)">'+visited+'/'+totalSites+'</div><div class="stat-lbl">Sites Visited</div></div>';
 }
@@ -537,7 +537,7 @@ function renderRotation() {
     var status = r.Status || r.status || "Pending";
     var cls = status === "Visited" ? "st-visited" : "st-pending";
     var icon = status === "Visited" ? "&#10003;" : "&#9711;";
-    h += '<div class="rotation-row"><div class="site-badge '+siteClass(site)+'">'+site+'</div><div class="rotation-assignee">'+assignee+'</div><div class="rotation-status '+cls+'">'+icon+" "+status+'</div></div>';
+    h += '<div class="rotation-row"><div class="site-badge '+siteClass(site)+'">'+site+'</div><div class="rotation-assignee">'+assignee+'</div><div class="rotation-status '+cls+'" onclick="toggleRotation('+i+')" style="cursor:pointer">'+icon+" "+status+'</div></div>';
   });
   document.getElementById("rotationList").innerHTML = h || '<div style="padding:12px;color:var(--muted)">No rotation data</div>';
 }
@@ -549,7 +549,7 @@ function renderTeam() {
     var name = t.Name || t.name || "";
     var initials = t.Initials || t.initials || name.split(" ").map(function(w){return w[0]}).join("");
     var location = t["Location Today"] || t.Location || t.location || "";
-    h += '<div class="team-row"><div class="team-avatar" style="background:'+c.bg+';color:'+c.fg+'">'+initials+'</div><div class="team-name">'+name+'</div><div class="team-loc">'+location+'</div></div>';
+    h += '<div class="team-row"><div class="team-avatar" style="background:'+c.bg+';color:'+c.fg+'">'+initials+'</div><div class="team-name">'+name+'</div><div class="team-loc" onclick="editTeamLoc('+i+')" style="cursor:pointer">'+location+'</div></div>';
   });
   document.getElementById("teamList").innerHTML = h || '<div style="padding:12px;color:var(--muted)">No team data</div>';
 }
@@ -563,7 +563,7 @@ function renderTaskBoard(targetId) {
     var assignee = t.Assignee || t.assignee || "";
     var priority = t.Priority || t.priority || "";
     var pcls = priority==="HIGH"?"priority-high":priority==="MED"?"priority-med":"priority-low";
-    return '<div class="card"><div class="card-title">'+task+'</div><div class="card-meta"><span class="card-detail">'+assignee+'</span><span class="card-tag '+pcls+'">'+priority+'</span></div></div>';
+    return '<div class="card" onclick="cycleTaskStatus('+t.id+')" style="cursor:pointer"><div class="card-title">'+task+'</div><div class="card-meta"><span class="card-detail">'+assignee+'</span><span class="card-tag '+pcls+'">'+priority+'</span></div></div>';
   }
   document.getElementById(targetId).innerHTML =
     '<div class="task-columns">'+
@@ -640,6 +640,70 @@ fetchAll();
 updateClock();
 setInterval(fetchAll, REFRESH_SECONDS * 1000);
 setInterval(updateClock, 1000);
+
+// ============================================================
+// GITHUB WRITE-BACK (Interactive editing)
+// ============================================================
+var GITHUB_REPO = "zhudskei/AMER-TX-AUS2-Board";
+var GITHUB_TOKEN = ""; // Paste your Personal Access Token here
+var GITHUB_FILE = "data.json";
+
+function pushToGitHub() {
+  if (!GITHUB_TOKEN) return;
+  var url = "https://api.github.com/repos/" + GITHUB_REPO + "/contents/" + GITHUB_FILE;
+  
+  // First get current file SHA
+  fetch(url, { headers: {"Authorization": "token " + GITHUB_TOKEN} })
+    .then(function(r) { return r.json(); })
+    .then(function(file) {
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2))));
+      return fetch(url, {
+        method: "PUT",
+        headers: {
+          "Authorization": "token " + GITHUB_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Dashboard update",
+          content: content,
+          sha: file.sha
+        })
+      });
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (result.content) {
+        document.getElementById("lastUpdate").textContent = "Saved " + new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"America/Chicago"});
+      }
+    })
+    .catch(function(e) { console.error("GitHub push error:", e); });
+}
+
+// ============================================================
+// INTERACTIVE ACTIONS
+// ============================================================
+function toggleRotation(i) {
+  DATA.rotation[i].status = DATA.rotation[i].status === "Visited" ? "Pending" : "Visited";
+  renderAll();
+  pushToGitHub();
+}
+
+function editTeamLoc(i) {
+  var loc = prompt("Update location for " + DATA.team[i].name + ":", DATA.team[i].location);
+  if (loc !== null) { DATA.team[i].location = loc; renderAll(); pushToGitHub(); }
+}
+
+function cycleTaskStatus(id) {
+  var t = DATA.tasks.find(function(x){return x.id===id});
+  if (!t) return;
+  var s = t.status || t.Status || "To Do";
+  if (s === "To Do") { t.status = "In Progress"; t.Status = "In Progress"; }
+  else if (s === "In Progress") { t.status = "Done"; t.Status = "Done"; }
+  else { t.status = "To Do"; t.Status = "To Do"; }
+  renderAll();
+  pushToGitHub();
+}
+
 </script>
 
 </body></html>
