@@ -463,7 +463,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);padding:16px
 // ============================================================
 // GOOGLE SHEETS CSV URLS
 // ============================================================
-var DATA_URL = "https://raw.githubusercontent.com/zhudskei/AMER-TX-AUS2-Board/main/data.json";
+// Fetching via GitHub API (no cache)
 
 var REFRESH_SECONDS = 30;
 
@@ -471,14 +471,20 @@ var REFRESH_SECONDS = 30;
 // FETCH DATA FROM GITHUB
 // ============================================================
 function fetchAll() {
-  fetch(DATA_URL + "?_t=" + Date.now())
+  if (isInCooldown()) return; // Skip fetch entirely during cooldown
+  
+  var url = "https://api.github.com/repos/" + GITHUB_REPO + "/contents/" + GITHUB_FILE;
+  var headers = {};
+  if (GITHUB_TOKEN) headers["Authorization"] = "token " + GITHUB_TOKEN;
+  headers["Accept"] = "application/vnd.github.v3.raw"; // Get raw JSON directly
+  headers["Cache-Control"] = "no-cache";
+  
+  fetch(url, { headers: headers })
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.rotation) {
-        if (!isInCooldown()) {
-          DATA = d;
-          renderAll();
-        }
+        DATA = d;
+        renderAll();
         document.getElementById("syncBadge").className = "sync-badge sync-live";
         document.getElementById("syncBadge").innerHTML = "&#x2705; Live - GitHub";
         document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"America/Chicago"});
