@@ -491,7 +491,7 @@ function fetchAll() {
 
 var TEAM_COLORS = [{bg:"#1e3a5f",fg:"#60a5fa"},{bg:"#3b2a1a",fg:"#fb923c"},{bg:"#1a3b2a",fg:"#4ade80"},{bg:"#2d1a3b",fg:"#c084fc"},{bg:"#1a3b3b",fg:"#2dd4bf"},{bg:"#3b1a2a",fg:"#f472b6"},{bg:"#2a3b1a",fg:"#a3e635"}];
 
-var DATA = { rotation:[], team:[], tasks:[], cases:[], projects:[] };
+var DATA = { rotation:[], team:[], tasks:[], lynceus:[], route:[], utr:[], wim:[], support:[], projects:[], siteStatus:[] };
 
 // ============================================================
 // TAB NAVIGATION
@@ -510,12 +510,17 @@ function switchTab(name) {
 function siteClass(s) { return "site-"+(s||"").toLowerCase().replace(/[^a-z0-9]/g,""); }
 
 function renderStats() {
-  var casesCount = DATA.cases.length;
-  var otr = DATA.cases.filter(function(c){var t=(c.Type||c.type||"").toLowerCase();return t==="lynceus"||t==="route";}).length;
-  var wim = DATA.cases.filter(function(c){var t=(c.Type||c.type||"").toLowerCase();return t==="wim";}).length;
-  var tasksDone = DATA.tasks.filter(function(t){return (t.Status||t.status)==="Done";}).length;
-  var visited = DATA.rotation.filter(function(r){return (r.Status||r.status)==="Visited";}).length;
-  var totalSites = DATA.rotation.length;
+  var lynceus = DATA.lynceus || [];
+  var route = DATA.route || [];
+  var utr = DATA.utr || [];
+  var wim = DATA.wim || [];
+  var support = DATA.support || [];
+  var casesCount = lynceus.length + route.length + utr.length + wim.length + support.length;
+  var otr = lynceus.length + route.length;
+  var wimCount = wim.length;
+  var tasksDone = (DATA.tasks||[]).filter(function(t){return (t.Status||t.status)==="Done";}).length;
+  var visited = (DATA.rotation||[]).filter(function(r){return (r.Status||r.status)==="Visited";}).length;
+  var totalSites = (DATA.rotation||[]).length;
   document.getElementById("statsRow").innerHTML =
     '<div class="stat"><div class="stat-val" style="color:var(--primary)">'+casesCount+'</div><div class="stat-lbl">Active Cases</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:var(--error)">'+otr+'</div><div class="stat-lbl">OTR Theft</div></div>'+
@@ -569,11 +574,11 @@ function renderTaskBoard(targetId) {
 }
 
 function renderCases() {
-  var lynceus = DATA.cases.filter(function(c){return (c.Type||c.type||"").toLowerCase()==="lynceus";});
-  var route = DATA.cases.filter(function(c){return (c.Type||c.type||"").toLowerCase()==="route";});
-  var utr = DATA.cases.filter(function(c){return (c.Type||c.type||"").toLowerCase()==="utr";});
-  var wim = DATA.cases.filter(function(c){return (c.Type||c.type||"").toLowerCase()==="wim";});
-  var support = DATA.cases.filter(function(c){return (c.Type||c.type||"").toLowerCase()==="support";});
+  var lynceus = DATA.lynceus || [];
+  var route = DATA.route || [];
+  var utr = DATA.utr || [];
+  var wim = DATA.wim || [];
+  var support = DATA.support || [];
 
   function renderList(list, targetId, tagClass) {
     if (list.length === 0) {
