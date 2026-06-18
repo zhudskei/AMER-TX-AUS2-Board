@@ -475,8 +475,10 @@ function fetchAll() {
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.rotation) {
-        DATA = d;
-        renderAll();
+        if (!isInCooldown()) {
+          DATA = d;
+          renderAll();
+        }
         document.getElementById("syncBadge").className = "sync-badge sync-live";
         document.getElementById("syncBadge").innerHTML = "&#x2705; Live - GitHub";
         document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"America/Chicago"});
@@ -642,6 +644,16 @@ setInterval(fetchAll, REFRESH_SECONDS * 1000);
 setInterval(updateClock, 1000);
 
 // ============================================================
+// EDIT COOLDOWN - prevents fetch from overwriting recent edits
+// ============================================================
+var lastEditTime = 0;
+var EDIT_COOLDOWN = 90000; // 90 seconds - wait for GitHub Pages cache to update
+
+function isInCooldown() {
+  return (Date.now() - lastEditTime) < EDIT_COOLDOWN;
+}
+
+// ============================================================
 // GITHUB WRITE-BACK (Interactive editing)
 // ============================================================
 var GITHUB_REPO = "zhudskei/AMER-TX-AUS2-Board";
@@ -683,17 +695,20 @@ function pushToGitHub() {
 // INTERACTIVE ACTIONS
 // ============================================================
 function toggleRotation(i) {
+  lastEditTime = Date.now();
   DATA.rotation[i].status = DATA.rotation[i].status === "Visited" ? "Pending" : "Visited";
   renderAll();
   pushToGitHub();
 }
 
 function editTeamLoc(i) {
+  lastEditTime = Date.now();
   var loc = prompt("Update location for " + DATA.team[i].name + ":", DATA.team[i].location);
   if (loc !== null) { DATA.team[i].location = loc; renderAll(); pushToGitHub(); }
 }
 
 function cycleTaskStatus(id) {
+  lastEditTime = Date.now();
   var t = DATA.tasks.find(function(x){return x.id===id});
   if (!t) return;
   var s = t.status || t.Status || "To Do";
