@@ -531,7 +531,7 @@ function renderStats() {
 
 function renderRotation() {
   var h = "";
-  DATA.rotation.forEach(function(r) {
+  DATA.rotation.forEach(function(r, i) {
     var site = r.Site || r.site || "";
     var assignee = r.Assignee || r.assignee || "";
     var status = r.Status || r.status || "Pending";
