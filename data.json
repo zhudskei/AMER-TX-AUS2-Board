@@ -3,27 +3,27 @@
     {
       "site": "STX9",
       "assignee": "Keith Hudson",
-      "status": "Pending"
+      "status": "Visited"
     },
     {
       "site": "STX6",
       "assignee": "Demi Moreno",
-      "status": "Pending"
+      "status": "Visited"
     },
     {
       "site": "DAU7",
       "assignee": "Andy Rosenthal",
-      "status": "Pending"
+      "status": "Visited"
     },
     {
       "site": "DUA3",
       "assignee": "Angel Ortiz Solivan",
-      "status": "Pending"
+      "status": "Visited"
     },
     {
       "site": "WBY1",
       "assignee": "Emily Kling",
-      "status": "Pending"
+      "status": "Visited"
     }
   ],
   "lynceus": [],
@@ -215,5 +215,5 @@
       "updated": ""
     }
   ],
-  "lastSync": "2026-06-19T18:15:27.358401-05:00"
+  "lastSync": "2026-06-19T18:17:49.229476-05:00"
 }
