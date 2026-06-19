@@ -177,5 +177,43 @@
     "teamName": "AMER-TX-AUS2",
     "refreshSeconds": 60
   },
-  "lastSync": "2026-06-19T18:08:38.344007-05:00"
+  "siteStatus": [
+    {
+      "site": "AUS2",
+      "status": "green",
+      "note": "All systems operational",
+      "updated": ""
+    },
+    {
+      "site": "STX9",
+      "status": "green",
+      "note": "",
+      "updated": ""
+    },
+    {
+      "site": "STX6",
+      "status": "yellow",
+      "note": "Camera 14B offline",
+      "updated": ""
+    },
+    {
+      "site": "DAU7",
+      "status": "green",
+      "note": "",
+      "updated": ""
+    },
+    {
+      "site": "DUA3",
+      "status": "red",
+      "note": "Dock door 3 sensor malfunction",
+      "updated": ""
+    },
+    {
+      "site": "WBY1",
+      "status": "green",
+      "note": "New badge readers installed",
+      "updated": ""
+    }
+  ],
+  "lastSync": "2026-06-19T18:15:27.358401-05:00"
 }
